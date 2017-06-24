@@ -1,0 +1,29 @@
+{
+  "name": "3d-snake",
+  "version": "0.6.0",
+  "private": true,
+  "dependencies": {
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "babylonjs": "^3.0.1-alpha",
+    "lodash": "^4.17.4",
+    "react-fontawesome": "^1.5.0",
+    "react-redux": "^5.0.5",
+    "redux": "^3.6.0",
+    "superagent": "^3.5.2",
+    "superagent-promise": "^1.1.0",
+    "uuid": "^3.0.1"
+  },
+  "devDependencies": {
+    "flow-bin": "^0.48.0",
+    "react-scripts": "0.9.5",
+    "custom-react-scripts": "0.0.23"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "flow": "flow"
+  }
+}
