@@ -1,5 +1,6 @@
 {
   "name": "3d-snake",
+  "homepage": "https://hejny.github.io/3d-snake",
   "version": "0.6.0",
   "private": true,
   "dependencies": {
@@ -15,15 +16,18 @@
     "uuid": "^3.0.1"
   },
   "devDependencies": {
+    "custom-react-scripts": "0.0.23",
     "flow-bin": "^0.48.0",
-    "react-scripts": "0.9.5",
-    "custom-react-scripts": "0.0.23"
+    "gh-pages": "^1.0.0",
+    "react-scripts": "0.9.5"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "flow": "flow"
+    "flow": "flow",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   }
 }

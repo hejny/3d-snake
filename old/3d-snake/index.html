@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>3D graph</title>
+        <!-- Babylon.js -->
+        <script src="http://www.babylonjs.com/hand.minified-1.2.js"></script>
+        <script src="http://www.babylonjs.com/cannon.js"></script>
+        <script src="http://www.babylonjs.com/oimo.js"></script>
+        <script src="http://www.babylonjs.com/babylon.js"></script>
+
+
+        <link href="style/scene.css"  rel="stylesheet" />
+
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+	<a onclick="canvas.requestPointerLock();canvas.focus();">zamkni</a>
+
+	<div id="score">0</div>
+
+    <script src="script/torus-graph.js"></script>
+    <script src="script/create-scene.js"></script>
+
+    <script>
+		
+		var scoreElement = document.getElementById("score");
+		
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+
+        var scene = createScene();
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+        
+        
+        
+        
+    </script>
+</body>
+</html>

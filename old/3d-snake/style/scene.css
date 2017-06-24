@@ -1,0 +1,24 @@
+body{
+
+	margin: 0;
+}
+
+
+#renderCanvas {
+    width: 100vw;
+    height: calc( 100vh - 50px);
+    touch-action: none;
+
+}
+
+
+
+#score{
+	position: fixed;
+	
+	top: 20px;
+	right: 20px;
+	
+	font-size: 2em;
+
+}
