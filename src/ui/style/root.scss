@@ -1,4 +1,4 @@
-#root{
+body{
     //z-index: 1;
     font-family: "Trebuchet MS", Helvetica, sans-serif;
 
@@ -7,12 +7,27 @@
 
 
 #scene {
+  z-index: 1;
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   touch-action: none;
+
+
+}
+
+
+#score {
+  z-index: 2;
+  position: fixed;
+  top: 0;
+  right: 0;
+  touch-action: none;
+  font-size: 2em;
+
+  padding: 5px;
 
 
 }

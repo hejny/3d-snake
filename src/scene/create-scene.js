@@ -31,29 +31,26 @@ export default function createScene(canvas,engine,getStore) {
     camera.attachControl(canvas, true);
 
 
-
     var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 
 
     const bounds = 5000;
 
+    let skybox;
 
 
-    var skybox = BABYLON.Mesh.CreateBox("skyBox", bounds*2, scene);
-    var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(process.env.PUBLIC_URL +"/images/skyboxes/TropicalSunnyDay/TropicalSunnyDay", scene, ["_ft.jpg", "_up.jpg", "_rt.jpg", "_bk.jpg", "_dn.jpg", "_lf.jpg"]);//todo public folder
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
     skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
     skyboxMaterial.disableLighting = true;
-    skybox.material = skyboxMaterial;/**/
-
-
 
 
     // Sphere1 material
     var material = new BABYLON.StandardMaterial("kosh", scene);
+    material.backFaceCulling=false;
     material.refractionTexture = skyboxMaterial.reflectionTexture;
     material.reflectionTexture = skyboxMaterial.reflectionTexture;
     material.diffuseColor = new BABYLON.Color3(0, 0, 0);
@@ -78,10 +75,10 @@ export default function createScene(canvas,engine,getStore) {
 
 
 
-    //const snakeMaterial = new BABYLON.StandardMaterial("texture2", scene);
-    //snakeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    const takenMaterial = new BABYLON.StandardMaterial("texture2", scene);
+    takenMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
     //snakeMaterial.alpha = 0.5;
-    //snakeMaterial.backFaceCulling = false;
+    takenMaterial.backFaceCulling = false;
 
 
 
@@ -89,13 +86,19 @@ export default function createScene(canvas,engine,getStore) {
     //let snakeMesh = null;
 
     let score = 0;
+    function setScore(_score){
+        score=_score;
+        document.getElementById('score').innerText=score;
+    }
     let snakeHead = new BABYLON.Vector3(0,0,0);
 
 
+    let snakeMesh;
 
-    const snakeMesh = BABYLON.Mesh.CreateSphere("snake", 16,  1, scene);
-    snakeMesh.material = snakeMaterial;
-    snakeMesh.position = snakeHead;
+
+
+
+
 
 
 
@@ -137,72 +140,140 @@ export default function createScene(canvas,engine,getStore) {
         return Math.pow(Math.random()*10,3);
     }
     function massToScaling(mass) {
-        const size3 = Math.pow(mass,1/2);
+        const size3 = Math.pow(mass,1/3);
         return new BABYLON.Vector3(size3,size3,size3);
     }
 
 
+    let speed,snakeMass,foods, interval;
+    function newGame(){
 
-    let speed = 10;
-    let snakeMass = 100;
-    let foods=[];
+        clearInterval(interval);
+        setScore(0);
+        camera.fov=1;
 
-    for(let i=0;i<1000;i++){
-
-        const mass = randomMass();
-
-        const food = BABYLON.Mesh.CreateSphere("food", 16,  10, scene);
-        food.scaling = massToScaling(mass);
-        food.material = foodMaterial;
-        food.position.x = (Math.random()-0.5)*2*bounds;
-        food.position.y = (Math.random()-0.5)*2*bounds;
-        food.position.z = (Math.random()-0.5)*2*bounds;
-
-
-        let foodMove = new BABYLON.Vector3(0,0,0);
-        foodMove.x += (Math.random()-0.5)*1;
-        foodMove.y += (Math.random()-0.5)*1;
-        foodMove.z += (Math.random()-0.5)*1;
-
-        let done = false;
-
-
-        foods.push({
-            mesh: food,
-            isDone: ()=>done,
-            done:()=>{
-
-                console.log('done');
-
-                food.dispose();
-                //food.material = snakeMaterial;
-                done = true;
-
-                //speed+=1;
-                snakeMass += mass;
-
-            },
-            tick:()=>{
-
-                /*if(!done) {
-                    food.position.addInPlace(foodMove);
-
-                    ['x', 'y', 'z'].forEach((axis)=> {
-                        if (food.position[axis] > bounds)food.position[axis] = -bounds;
-                        if (food.position[axis] < -bounds)food.position[axis] = bounds;
-                    });
-                }*/
+        scene.meshes.forEach((mesh) => {
+            mesh.dispose();
+        });
+        scene.meshes = [];
 
 
 
-        }});/**/
+
+        snakeMesh = BABYLON.Mesh.CreateSphere("snake", 16,  1, scene);
+        snakeMesh.material = snakeMaterial;
+        snakeMesh.position = snakeHead;
+
+
+
+        skybox = BABYLON.Mesh.CreateBox("skyBox", bounds*2, scene);
+        skybox.material = skyboxMaterial;
+
+
+
+
+        speed = 15;
+        snakeMass = 500;
+        foods=[];
+
+        let i;
+        function addBall(){i++;
+
+            let mass = randomMass();
+
+            const food = BABYLON.Mesh.CreateSphere("food", 16,  1, scene);
+            food.scaling = massToScaling(mass);
+            food.position.x = (Math.random()-0.5)*2*bounds;
+            food.position.y = (Math.random()-0.5)*2*bounds;
+            food.position.z = (Math.random()-0.5)*2*bounds;
+
+            let foodMove = new BABYLON.Vector3(0,0,0);
+            foodMove.x += (Math.random()-0.5)*1;
+            foodMove.y += (Math.random()-0.5)*1;
+            foodMove.z += (Math.random()-0.5)*1;
+
+            let done = false;
+            let black = (Math.random()>0.8);
+            let factor = 1+Math.random()/100;
+            let treshold = 100000+Math.random()*1000000000;
+
+
+            food.material = black?takenMaterial:foodMaterial;
+
+            foods.push({
+                id: `food${i}`,
+                mesh: food,
+                getRadius: ()=>food.scaling.x/2,
+                isDone: ()=>done,
+                isBlack: ()=>black,
+                done:()=>{
+
+                    console.log('done');
+
+                    food.dispose();
+                    //food.material = takenMaterial;
+                    done = true;
+
+                    //speed+=1;
+                    snakeMass /= 1.05;
+
+                },
+                tick:()=>{
+
+                    if(!done) {
+                        mass*=factor;
+                        food.scaling = massToScaling(mass);
+
+
+                        if(mass>treshold){
+                            //food.material = takenMaterial;
+                            //factor = 1+((factor-1)*0.99);
+                            //black=true;
+
+
+                            if(mass>treshold*10){
+                                //if(black) {
+                                    factor=1;
+                                //}else{
+                                //    food.dispose();
+                                //    done = true;
+                                //}
+                            }
+                        }
+
+                    }
+
+
+                    /*if(!done) {
+                     food.position.addInPlace(foodMove);
+
+                     ['x', 'y', 'z'].forEach((axis)=> {
+                     if (food.position[axis] > bounds)food.position[axis] = -bounds;
+                     if (food.position[axis] < -bounds)food.position[axis] = bounds;
+                     });
+                     }*/
+
+
+
+                }});/**/
+
+        }
+        interval = setInterval(addBall,500);
+        for(let i=0;i<500;i++){
+            addBall();
+        }
+
+
 
     }
 
+    newGame();
 
 
 
-    let food = BABYLON.Mesh.CreateSphere("food", 16, 8, scene);
+
+
+    /*let food = BABYLON.Mesh.CreateSphere("food", 16, 8, scene);
     food.material = foodMaterial;
 
     function newFoodPosition(){
@@ -211,7 +282,7 @@ export default function createScene(canvas,engine,getStore) {
         food.position.z = Math.random()*100;
     };
 
-    newFoodPosition();
+    newFoodPosition();*/
 
 
 
@@ -222,11 +293,16 @@ export default function createScene(canvas,engine,getStore) {
 
 
     let tick = 0;
+    let currentFood =null;
 
     scene.registerBeforeRender(function () {
 
+        speed = 4000/snakeMass;
+        camera.fov += 0.0001;
+        //camera.fov=1.3+(1/snakeMass);
 
-        snakeMass = snakeMass*0.999;
+
+        //snakeMass = snakeMass*0.99;
         snakeMesh.scaling = massToScaling(snakeMass);
 
 
@@ -251,6 +327,11 @@ export default function createScene(canvas,engine,getStore) {
 
         snakeHead.addInPlace(snakeMove);
 
+        /*const position = snakeHead;
+        ['x', 'y', 'z'].forEach((axis)=> {
+            if (position[axis] > bounds)position[axis] = -bounds;
+            if (position[axis] < -bounds)position[axis] = bounds;
+        });*/
 
 
         camera.position = snakeHead.subtract(snakeMove.multiplyByFloats(10,10,10));//.add(snakeMove.multiply(new BABYLON.Vector3(1,0,1)).multiplyByFloats(5,5,5)));
@@ -263,7 +344,7 @@ export default function createScene(canvas,engine,getStore) {
 
 
 
-        skybox.position = camera.position.multiplyByFloats(0.9,0.9,0.9);
+        skybox.position = camera.position;//.multiplyByFloats(0.9,0.9,0.9);
         //skybox.position = camera.position.multiplyByFloats(0.1,0.1,0.1);
 
 
@@ -272,13 +353,29 @@ export default function createScene(canvas,engine,getStore) {
 
 
 
-
         foods.forEach((food)=>{
 
-            if(tick>10 && !food.isDone()) {
+            if(tick>10) {
 
-                if (food.mesh.intersectsPoint(snakeHead)) {
-                    food.done();
+
+                //console.log(BABYLON.Vector3.Distance(food.mesh.position,snakeHead),food.getRadius());
+                if (BABYLON.Vector3.Distance(food.mesh.position,snakeHead)<food.getRadius()) {
+
+                    if(food.isBlack()){
+                        //console.log(currentFood.id,food.id);
+                        //if(currentFood.id !== food.id) {
+                        alert(`Game Over. You have ${score} points!`);
+                        newGame();
+                        //}
+                    }else{
+
+                        if(!food.isDone()) {
+                            food.done();
+                            setScore(score+1);
+                            currentFood = food;
+                        }
+                    }
+
                 }
             }
 
